@@ -1,0 +1,533 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/exterex/janus/main/nextflow_schema.json",
+  "title": "exterex/janus pipeline parameters",
+  "description": "Bacterial genome annotation with Bakta and legacy locus tag transfer",
+  "type": "object",
+  "$defs": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "fa_icon": "fas fa-terminal",
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "exists": true,
+          "mimetype": "text/csv",
+          "description": "Path to CSV samplesheet with columns: sample, fasta, prefix (required); gff, protein (optional).",
+          "fa_icon": "fas fa-file-csv"
+        },
+        "outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "default": "results",
+          "description": "Output directory for results.",
+          "fa_icon": "fas fa-folder-open"
+        }
+      },
+      "required": ["input"]
+    },
+    "database_options": {
+      "title": "Database options",
+      "type": "object",
+      "fa_icon": "fas fa-hdd",
+      "description": "Persistent storeDir locations for Bakta and eggNOG databases. Both default to <launchDir>/.db_cache and can be set independently. On HPC/Slurm point these at shared project or scratch storage.",
+      "properties": {
+        "bakta_db_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "default": "${launchDir}/.db_cache",
+          "description": "Persistent storeDir for the Bakta database. The DB is stored at <bakta_db_dir>/db/. Downloaded automatically on first run.",
+          "fa_icon": "fas fa-database"
+        },
+        "eggnog_db_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "default": "${launchDir}/.db_cache",
+          "description": "Persistent storeDir for the eggNOG-mapper database. The DB is stored at <eggnog_db_dir>/eggnog_data/. Downloaded automatically on first run.",
+          "fa_icon": "fas fa-database"
+        }
+      }
+    },
+    "bakta_annotation_options": {
+      "title": "Bakta annotation options",
+      "type": "object",
+      "fa_icon": "fas fa-dna",
+      "properties": {
+        "bakta_min_contig_length": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 1,
+          "description": "Minimum contig length to annotate (200 in --compliant mode).",
+          "fa_icon": "fas fa-ruler",
+          "hidden": true
+        },
+        "bakta_translation_table": {
+          "type": "integer",
+          "default": 11,
+          "enum": [11, 4, 25],
+          "description": "Translation table: 11 (standard bacteria), 4 (Mycoplasma), 25 (Candidate Division SR1).",
+          "fa_icon": "fas fa-table",
+          "hidden": true
+        },
+        "bakta_prodigal_tf": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Path to existing Prodigal training file for CDS prediction.",
+          "fa_icon": "fas fa-file",
+          "hidden": true
+        },
+        "bakta_locus_tag_increment": {
+          "type": "integer",
+          "default": 1,
+          "enum": [1, 5, 10],
+          "description": "Locus tag increment between features.",
+          "fa_icon": "fas fa-sort-numeric-up",
+          "hidden": true
+        },
+        "bakta_keep_contig_headers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Keep original contig/sequence headers.",
+          "fa_icon": "fas fa-heading",
+          "hidden": true
+        },
+        "bakta_compliant": {
+          "type": "boolean",
+          "default": false,
+          "description": "Force Genbank/ENA/DDJB compliance.",
+          "fa_icon": "fas fa-check-circle",
+          "hidden": true
+        },
+        "bakta_replicons": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Replicon information table (tsv/csv).",
+          "fa_icon": "fas fa-table",
+          "hidden": true
+        },
+        "bakta_hmms": {
+          "type": "string",
+          "format": "file-path",
+          "description": "HMM file of trusted hidden Markov models (HMMER format) for CDS annotation.",
+          "fa_icon": "fas fa-file",
+          "hidden": true
+        },
+        "bakta_meta": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run in metagenome mode (affects CDS prediction only).",
+          "fa_icon": "fas fa-layer-group",
+          "hidden": true
+        },
+        "bakta_skip_trna": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip tRNA detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_tmrna": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip tmRNA detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_rrna": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip rRNA detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_ncrna": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip ncRNA detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_ncrna_region": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip ncRNA region detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_crispr": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip CRISPR array detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_cds": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip CDS detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_pseudo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip pseudogene detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_sorf": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip sORF detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_gap": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip gap detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_ori": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip oriC/oriT detection and annotation.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_filter": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip feature overlap filters.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_skip_plot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip generation of circular genome plots.",
+          "fa_icon": "fas fa-forward",
+          "hidden": true
+        },
+        "bakta_extra_args": {
+          "type": "string",
+          "default": "",
+          "description": "Additional command-line arguments passed verbatim to bakta.",
+          "fa_icon": "fas fa-plus"
+        }
+      }
+    },
+    "eggnog_mapper_options": {
+      "title": "eggNOG-mapper options",
+      "type": "object",
+      "fa_icon": "fas fa-project-diagram",
+      "properties": {
+        "eggnog_run": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run eggNOG-mapper on Bakta protein FASTA outputs.",
+          "fa_icon": "fas fa-play"
+        },
+        "eggnog_search_mode": {
+          "type": "string",
+          "default": "diamond",
+          "enum": ["diamond", "mmseqs", "hmmer", "no_search", "cache", "novel_fams"],
+          "description": "Search method (-m): diamond (default), mmseqs, hmmer, no_search, cache, or novel_fams.",
+          "fa_icon": "fas fa-search",
+          "hidden": true
+        },
+        "eggnog_itype": {
+          "type": "string",
+          "default": "proteins",
+          "enum": ["CDS", "proteins", "genome", "metagenome"],
+          "description": "Type of data in the input file (--itype). Use 'proteins' for Bakta .faa output.",
+          "fa_icon": "fas fa-file-alt",
+          "hidden": true
+        },
+        "eggnog_pident": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Report only alignments at or above this percentage identity (--pident).",
+          "fa_icon": "fas fa-percent",
+          "hidden": true
+        },
+        "eggnog_query_cover": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Report only alignments at or above this query coverage percentage (--query_cover).",
+          "fa_icon": "fas fa-percent",
+          "hidden": true
+        },
+        "eggnog_subject_cover": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Report only alignments at or above this subject coverage percentage (--subject_cover).",
+          "fa_icon": "fas fa-percent",
+          "hidden": true
+        },
+        "eggnog_evalue": {
+          "type": "number",
+          "default": 0.001,
+          "description": "E-value threshold for alignments (--evalue).",
+          "fa_icon": "fas fa-filter",
+          "hidden": true
+        },
+        "eggnog_score": {
+          "type": "number",
+          "description": "Minimum bit score threshold (--score).",
+          "fa_icon": "fas fa-filter",
+          "hidden": true
+        },
+        "eggnog_sensmode": {
+          "type": "string",
+          "default": "sensitive",
+          "enum": ["default", "fast", "mid-sensitive", "sensitive", "more-sensitive", "very-sensitive", "ultra-sensitive"],
+          "description": "Diamond sensitivity mode (--sensmode). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-sliders-h",
+          "hidden": true
+        },
+        "eggnog_dmnd_iterate": {
+          "type": "string",
+          "default": "yes",
+          "enum": ["yes", "no"],
+          "description": "Activate Diamond iterative search (--dmnd_iterate). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-redo",
+          "hidden": true
+        },
+        "eggnog_dmnd_algo": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "0", "1", "ctg"],
+          "description": "Diamond algorithm (--dmnd_algo). Use 'ctg' for small query sets. Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-cogs",
+          "hidden": true
+        },
+        "eggnog_matrix": {
+          "type": "string",
+          "enum": ["BLOSUM62", "BLOSUM90", "BLOSUM80", "BLOSUM50", "BLOSUM45", "PAM250", "PAM70", "PAM30"],
+          "description": "Scoring matrix (--matrix). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-th",
+          "hidden": true
+        },
+        "eggnog_dmnd_frameshift": {
+          "type": "integer",
+          "description": "Diamond frameshift penalty (--dmnd_frameshift). Recommended: 15. Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-sliders-h",
+          "hidden": true
+        },
+        "eggnog_gapopen": {
+          "type": "integer",
+          "description": "Gap open penalty (--gapopen). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-sliders-h",
+          "hidden": true
+        },
+        "eggnog_gapextend": {
+          "type": "integer",
+          "description": "Gap extend penalty (--gapextend). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-sliders-h",
+          "hidden": true
+        },
+        "eggnog_block_size": {
+          "type": "number",
+          "description": "Diamond block size (-b/--block-size). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-cubes",
+          "hidden": true
+        },
+        "eggnog_index_chunks": {
+          "type": "integer",
+          "description": "Diamond index chunks (-c/--index-chunks). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-cubes",
+          "hidden": true
+        },
+        "eggnog_outfmt_short": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use short Diamond output format (--outfmt_short). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-compress-alt",
+          "hidden": true
+        },
+        "eggnog_dmnd_ignore_warnings": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ignore Diamond warnings (--dmnd_ignore_warnings). Only used when eggnog_search_mode=diamond.",
+          "fa_icon": "fas fa-exclamation-triangle",
+          "hidden": true
+        },
+        "eggnog_seed_ortholog_evalue": {
+          "type": "number",
+          "default": 0.001,
+          "description": "Min e-value for seed eggNOG ortholog hits (--seed_ortholog_evalue).",
+          "fa_icon": "fas fa-filter",
+          "hidden": true
+        },
+        "eggnog_seed_ortholog_score": {
+          "type": "number",
+          "description": "Min bit score for seed eggNOG ortholog hits (--seed_ortholog_score).",
+          "fa_icon": "fas fa-filter",
+          "hidden": true
+        },
+        "eggnog_tax_scope": {
+          "type": "string",
+          "default": "auto",
+          "description": "Taxonomic scope for annotation (--tax_scope). Options: auto, bacteria, eukaryota, archaea, prokaryota_broad, bacteria_broad, eukaryota_broad, all_broad, all_narrow, none, or comma-separated tax IDs.",
+          "fa_icon": "fas fa-sitemap",
+          "hidden": true
+        },
+        "eggnog_tax_scope_mode": {
+          "type": "string",
+          "default": "inner_narrowest",
+          "enum": ["broadest", "inner_broadest", "inner_narrowest", "narrowest"],
+          "description": "Which clade to use for annotation within the tax_scope (--tax_scope_mode).",
+          "fa_icon": "fas fa-sitemap",
+          "hidden": true
+        },
+        "eggnog_target_orthologs": {
+          "type": "string",
+          "default": "all",
+          "enum": ["one2one", "many2one", "one2many", "many2many", "all"],
+          "description": "Ortholog types to use for functional transfer (--target_orthologs).",
+          "fa_icon": "fas fa-exchange-alt",
+          "hidden": true
+        },
+        "eggnog_target_taxa": {
+          "type": "string",
+          "description": "Comma-separated tax IDs to restrict orthologs for annotation transfer (--target_taxa).",
+          "fa_icon": "fas fa-filter",
+          "hidden": true
+        },
+        "eggnog_excluded_taxa": {
+          "type": "string",
+          "description": "Comma-separated tax IDs to exclude from annotation transfer (--excluded_taxa).",
+          "fa_icon": "fas fa-ban",
+          "hidden": true
+        },
+        "eggnog_go_evidence": {
+          "type": "string",
+          "default": "non-electronic",
+          "enum": ["experimental", "non-electronic", "all"],
+          "description": "Type of GO terms to use for annotation (--go_evidence).",
+          "fa_icon": "fas fa-tag",
+          "hidden": true
+        },
+        "eggnog_pfam_realign": {
+          "type": "string",
+          "default": "none",
+          "enum": ["none", "realign", "denovo"],
+          "description": "Realign queries to PFAM domains (--pfam_realign).",
+          "fa_icon": "fas fa-align-left",
+          "hidden": true
+        },
+        "eggnog_no_annot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip functional annotation, reporting only hits (--no_annot).",
+          "fa_icon": "fas fa-ban",
+          "hidden": true
+        },
+        "eggnog_dbmem": {
+          "type": "boolean",
+          "default": false,
+          "description": "Load the entire eggnog.db into memory (--dbmem).",
+          "fa_icon": "fas fa-memory",
+          "hidden": true
+        },
+        "eggnog_report_orthologs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Output list of orthologs for each query to a .orthologs file (--report_orthologs).",
+          "fa_icon": "fas fa-list",
+          "hidden": true
+        },
+        "eggnog_report_no_hits": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include queries without hits in the output table (--report_no_hits).",
+          "fa_icon": "fas fa-list",
+          "hidden": true
+        },
+        "eggnog_md5": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add MD5 hash of each query to the annotations output (--md5).",
+          "fa_icon": "fas fa-hashtag",
+          "hidden": true
+        },
+        "eggnog_excel": {
+          "type": "boolean",
+          "default": false,
+          "description": "Output annotations also in .xlsx format (--excel).",
+          "fa_icon": "fas fa-file-excel",
+          "hidden": true
+        },
+        "eggnog_no_file_comments": {
+          "type": "boolean",
+          "default": false,
+          "description": "Omit header lines and stats from output files (--no_file_comments).",
+          "fa_icon": "fas fa-minus-circle",
+          "hidden": true
+        },
+        "eggnog_extra_args": {
+          "type": "string",
+          "default": "",
+          "description": "Additional command-line arguments passed verbatim to emapper.py.",
+          "fa_icon": "fas fa-plus",
+          "hidden": true
+        }
+      }
+    },
+    "locus_tag_transfer_options": {
+      "title": "Locus tag transfer options",
+      "type": "object",
+      "fa_icon": "fas fa-exchange-alt",
+      "properties": {}
+    },
+    "generic_options": {
+      "title": "Generic options",
+      "type": "object",
+      "fa_icon": "fas fa-cogs",
+      "properties": {
+        "publish_dir_mode": {
+          "type": "string",
+          "default": "copy",
+          "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+          "description": "Method used to save pipeline results to output directory.",
+          "fa_icon": "fas fa-copy"
+        },
+        "monochrome_logs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable coloured log output.",
+          "fa_icon": "fas fa-palette"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Display help text.",
+          "fa_icon": "fas fa-question-circle",
+          "hidden": true
+        },
+        "version": {
+          "type": "boolean",
+          "default": false,
+          "description": "Display version and exit.",
+          "fa_icon": "fas fa-info-circle",
+          "hidden": true
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/input_output_options" },
+    { "$ref": "#/$defs/database_options" },
+    { "$ref": "#/$defs/bakta_annotation_options" },
+    { "$ref": "#/$defs/eggnog_mapper_options" },
+    { "$ref": "#/$defs/locus_tag_transfer_options" },
+    { "$ref": "#/$defs/generic_options" }
+  ]
+}

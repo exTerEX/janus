@@ -1,0 +1,30 @@
+nextflow_process {
+
+    name "Test EGGNOG_MAPPER stub"
+    script "../../../../modules/local/eggnog_mapper/main.nf"
+    process "EGGNOG_MAPPER"
+    profile "docker"
+
+    test("Should produce expected output files") {
+        when {
+            params {
+                eggnog_extra_args = ''
+            }
+            process {
+                """
+                input[0] = [
+                    [id: 'test_sample', prefix: 'TEST'],
+                    file("${projectDir}/assets/samplesheet.csv"),
+                    file("${projectDir}/assets")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.annotations
+            assert process.out.versions
+        }
+    }
+}

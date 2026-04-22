@@ -1,0 +1,26 @@
+nextflow_process {
+
+    name "Test BAKTA stub"
+    script "../../../../modules/local/bakta/main.nf"
+    process "BAKTA"
+    profile "docker"
+
+    test("Should produce expected output files") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test_sample', prefix: 'TEST', gram: '?', complete: false],
+                    file("${projectDir}/assets/samplesheet.csv"),
+                    file("${projectDir}/assets")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.versions
+        }
+    }
+}
