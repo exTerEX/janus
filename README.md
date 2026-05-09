@@ -37,7 +37,7 @@ A CSV samplesheet with columns:
 | `sample`       | Yes      | Unique sample identifier                                      |
 | `fasta`        | Yes      | Path to genome FASTA file                                     |
 | `complete`     | No       | `true` if genome is fully assembled (default: `false`)        |
-| `gram`         | No       | Gram stain: `+`, `-`, or `?` (default: `?`)                  |
+| `gram`         | No       | Gram stain: `+`, `-`, or `?` (default: `?`)                   |
 | `locus_prefix` | No       | Prefix for locus tags and output files (default: sample name) |
 
 Example:
