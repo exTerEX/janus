@@ -23,7 +23,7 @@ process BAKTA_DOWNLOAD_DB {
 
     script:
     """
-    bakta_db download --output tmp_db/ --type light
+    bakta_db download --output tmp_db/ --type full
 
     # Locate the directory that contains version.json (may be nested inside tmp_db/)
     db_src=\$(dirname \$(find tmp_db/ -name "version.json" -maxdepth 3 | head -1))

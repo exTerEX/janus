@@ -5,6 +5,7 @@
 .nextflow.pid
 .nextflow.log.*.bak
 *.log
+.nf-test-db
 
 # Pipeline work and output directories
 work/
